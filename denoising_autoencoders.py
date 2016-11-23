@@ -44,9 +44,8 @@ def transform_test(Xtest,W,layer_func=np.tanh,use_bias=True):
     return hx
 
 
-"""
-I could factor this in the main code to add the option ...
-"""
+
+#TODO factor this in the main code to add the option ...
 def mDA_without_bias(X,p,reg_lambda=1e-2,layer_func=np.tanh,Xr=None):
     """
 
@@ -121,16 +120,13 @@ def mDA_domain_regularization(X,p,eta,C,D,IC_inverse,reg_lambda=1e-2,layer_func=
     :param Xr:
     :return:
     """
-    #Extend observations to add bias features
+
 
 
     (n_features,n_obs)=X.shape
-    #print("X_matrix has shape",n_features,n_obs)
-
     if Xr is not None:
         (r,n_obs_r) =Xr.shape
         Xrdense = Xr.toarray()
-
 
     q =(1.0-p)*np.ones((n_features,1))
     #q[-1]=1.0
@@ -144,12 +140,8 @@ def mDA_domain_regularization(X,p,eta,C,D,IC_inverse,reg_lambda=1e-2,layer_func=
         #S = scipy.linalg.blas.dgemm(alpha=1.0, a=Xb, b=Xb, trans_b=True)
 
     Q = (S)*np.dot(q,q.T)
-
-    #This changes the diagonal of Q
-    #TODO Check the faster alternatives
-    #Q.flat[::n_features+2] = q*np.diag(S)
     np.fill_diagonal(Q,q*np.diag(S))
-    #Q[-1,-1]=S[-1,-1]
+
 
     if Xr is not None:
         #This fails if Xr is sparse, so convert it first  #Element wise Arrays #
@@ -162,18 +154,7 @@ def mDA_domain_regularization(X,p,eta,C,D,IC_inverse,reg_lambda=1e-2,layer_func=
 
     reg = reg_lambda*np.eye(n_features)
 
-    #print P.shape
-    #print Q.shape
 
-    #reg[-1,-1]=0.0
-    #Wt =np.linalg.solve((Q+reg).T,P.T)
-    #This is unclear with the notations
-    #This has different notations/conventions compared to the paper no
-    # B' is feat times doc
-    # Be careful with P.shape ....
-    #Choose or not to include bias term or not ...
-    #Remove the bias term
-    #pdb.set_trace()
 
     if len(D.shape)==1:
         Dv=np.zeros((D.shape[0],1))
@@ -182,9 +163,7 @@ def mDA_domain_regularization(X,p,eta,C,D,IC_inverse,reg_lambda=1e-2,layer_func=
         Dv=D
 
     #For single category
-    #REshape D to have correct size is the better solution
-    #Ptmp=safe_sparse_dot(np.outer(C,D),X.T,dense_output=True).T
-    P2 =  P -eta*(1.0-p)*safe_sparse_dot(X,Dv,dense_output=True).dot(C.T) #There is an optimal parenthesiation ...
+    P2 =  P -eta*(1.0-p)*safe_sparse_dot(X,Dv,dense_output=True).dot(C.T) #
     #P2 =  P -eta*(1.0-p)*Ptmp
     #Preg=P2
     Preg= np.dot(P2,IC_inverse)
@@ -193,15 +172,7 @@ def mDA_domain_regularization(X,p,eta,C,D,IC_inverse,reg_lambda=1e-2,layer_func=
 
     #Wt =np.linalg.solve((Q+reg).T,Preg.T)
     # Q is symmetric Q.T =Q P is as well
-    W =np.linalg.solve(Q.T+reg,Preg) #To Transpose or not ??? ...Not ...
-
-    #This is unclear with the notations
-    #This has different notations/conventions compared to the paper no
-    # B' is feat times doc
-    # Be careful with P.shape ....
-    #Choose or not to include bias term or not ...
-    #print P.shape
-    #print Q.shape
+    W =np.linalg.solve(Q.T+reg,Preg)
 
 
     #print "Wt",Wt.shape
@@ -244,7 +215,6 @@ def mDA(X, p, reg_lambda, layer_func=np.tanh, Xr=None, filter_W_option=0, topk=5
         new_row =sp.csr_matrix(np.ones((1,n_obs)))
         Xb=sp.vstack( [X, new_row])
     else:
-        #Xb=np.asfortranarray(np.append(X,np.ones((1,n_obs)),axis=0)) #This operation creates a copy of the original array
         Xb=np.append(X,np.ones((1,n_obs)),axis=0) #This operation creates a copy of the original array
 
     q =(1.0-p)*np.ones((n_features+1,1))
@@ -346,7 +316,6 @@ def expectations_PQ(X,p,reg_lambda,layer_func=np.tanh,Xr=None):
         new_row =sp.csr_matrix(np.ones((1,n_obs)))
         Xb=sp.vstack( [X, new_row])
     else:
-        #Xb=np.asfortranarray(np.append(X,np.ones((1,n_obs)),axis=0)) #This operation creates a copy of the original array
         Xb=np.append(X,np.ones((1,n_obs)),axis=0) #This operation creates a copy of the original array
 
     q =(1.0-p)*np.ones((n_features+1,1))

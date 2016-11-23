@@ -17,9 +17,7 @@ import sklearn.feature_extraction.text
 import itertools
 import pickle
 
-#exp_run import cross_validate_classifier,msda_lsi
 
-#I would need a reparse with filtering infrequent features
 
 _amazon_datanames=['dvd','books','kitchen','electronics']
 
@@ -44,6 +42,12 @@ def make_ID_datasets_DA(outname='amt_datasets_id.pickle'):
 
 
 def count_list_to_sparse_matrix(X_list,dico):
+    """
+    Transform a list of count in a sparse scipy matrix
+    :param X_list:
+    :param dico:
+    :return:
+    """
     ndocs = len(X_list)
     voc_size = len(dico.keys())
 
@@ -181,7 +185,7 @@ def get_da_dataset_test(source_name,target_name,type='small',max_words=10000,fea
 
 
 
-def mda_exp(Xs,Ys,Xt,Yt,clf_class=LogisticRegression,noise=0.9,feat_type=0,layer_func=lambda x : layer_function(x,3),
+def mda_exp(Xs,Ys,Xt,Yt,clf_class=LogisticRegression,noise=0.9,feat_type=2,layer_func=lambda x : layer_function(x,3),
             filter_W_option=0,topk=50,cross_valid=True,use_Xr=True,use_bias=True):
     #Stack Dataset Together
     ndocs_source = Xs.shape[0]
@@ -206,7 +210,7 @@ def mda_exp(Xs,Ys,Xt,Yt,clf_class=LogisticRegression,noise=0.9,feat_type=0,layer
         if use_bias:
             hw,W = denoising_autoencoders.mDA(X_all.T, noise, 1e-2, layer_func=layer_func, filter_W_option=filter_W_option, topk=topk)
         else:
-            print "Without Bias ...."
+            print("Without Bias ....")
             hw,W = denoising_autoencoders.mDA_without_bias(X_all.T,noise,1e-2,layer_func=layer_func)
 
 

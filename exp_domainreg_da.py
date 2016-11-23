@@ -1,12 +1,5 @@
 
-#
 __author__ = 'sclincha'
-#
-#"""
-#Domain Regularization ....
-
-
-
 
 
 import numpy as np
@@ -25,66 +18,16 @@ import msda_exp
 #from msda_exp import msda_domainreg_exp
 from sklearn.feature_extraction.text import TfidfTransformer
 
-################################################################################
-###   SGE SETTINGS #############################################################
-##source /usr/local/grid/XRCE/common/settings.sh
-##DATASETSIDS=range(12,24)
-#DATASETSIDS=range(12,24)
-DATASETSIDS=range(12,14)
-#DATASET='AMT'
-DATASET='20NG'
-##FEAT=[2]
-##NOISE=[0.9]
-##CHANGE EXPSET in EXPSET=20 in script file
 
-exec_path="/home/sclincha/AAT/src/DenoisingAutoencoders/exp_domain_reg.sh"
-##resdir_path='/opt/scratch/MLS/usr/sclincha/domainreg_exp_20ng'
-##resdir_path='/opt/scratch/MLS/usr/sclincha/domainreg_exp'
-#resdir_path='/opt/scratch/MLS/usr/sclincha/dr_target_reg_cv_10e4_feat'
-resdir_path='/home/sclincha/AAT/src/DenoisingAutoencoders/dr_target_20NG_cv'
-#resdir_path='/opt/scratch/MLS/usr/sclincha/tmp/'
-
-#exp_utils.make_grid(exec_path,resdir_path,DATASETSIDS,NOISE,FEAT)
-
-def param_argument(dataset):
-    return str(dataset)
-
-def qsub_cmd(dataset,res_dir_path,exec_name):
-    params   =param_argument(dataset)
-    exp_name = 'DA_DR'+string.replace(params,':','-')
-
-    #res_dir_name=res_dir_path+'/'+dataset+'_feat'
-    #os.system('mkdir -p '+ res_dir_name)
-    #os.mkdir(res_dir_name)
-    #Remove Standard Output
-    #-o /dev/null -e /dev/null
-    #cmd_str='qsub -M stephane.clinchant@xrce.xerox.com -m a -cwd -N ' +exp_name+ ' -l vf=2G,h_vmem=12G,p=2 ' \
-    #
-    #                                                                              '-v PARAM='+"'"+params+"'"+',OUTDIR='+"'"+res_dir_path+"'"+'  '+exec_name
-
-    #-o /opt/scratch/MLS/usr/sclincha/sge_logs/ -e /opt/scratch/MLS/usr/sclincha/sge_logs/
-    cmd_str='qsub  -o /opt/scratch/MLS/usr/sclincha/sge_logs/ -e /opt/scratch/MLS/usr/sclincha/sge_logs/ -m a -cwd -N ' +exp_name+ ' -l vf=16G,h_vmem=32G,p=4 ' \
-                                                                                  '-v DATA='+  "'"+DATASET+"'"+',PARAM='+"'"+params+"'"+',OUTDIR='+"'"+res_dir_path+"'"+'  '+exec_name
-    print cmd_str
-    os.system(cmd_str)
-
-
-def make_grid():
-    for dataset in DATASETSIDS:
-        qsub_cmd(dataset,resdir_path,exec_path)
-
-def print_results(res_path):
-    DATANAME =pickle.load(open('datasets_id.pickle'))
-    for i in DATASETSIDS:
-        try:
-            z=np.loadtxt(res_path+str(i))
-            print DATANAME[i],z
-        except Exception as e:
-            print(e)
-
-
-def print_results_latex(res_path,DID=DATASETSIDS,did_pickle='datasets_id.pickle'):
-    DATANAME =pickle.load(open(did_pickle))
+def print_results_latex(res_path,DID=range(12,24),did_pickle='amt_datasets_id.pickle'):
+    """
+    Print the result in latex format
+    :param res_path:
+    :param DID:
+    :param did_pickle:
+    :return:
+    """
+    DATANAME =pickle.load(open(did_pickle,'r'))
     Z=None
     for i in DID:
         try:
@@ -111,24 +54,6 @@ def print_results_latex(res_path,DID=DATASETSIDS,did_pickle='datasets_id.pickle'
     print Z
     print Z.mean(axis=0)
 
-
-def print_results_notebooks(res_path):
-    DATANAME =pickle.load(open('datasets_id.pickle'))
-    Z=None
-    for i in DATASETSIDS:
-        try:
-            z=np.loadtxt(res_path+str(i))
-            if Z is not None:
-                Z = np.vstack([Z,z])
-            else:
-                Z=z
-            msda_acc =z[0]
-            dr_acc   =z[1]
-            print '|',string.join(DATANAME[i],'|'),'| %1.3f'%msda_acc,'|','%1.3f'%dr_acc,'|'
-        except Exception as e:
-            print(e)
-    print Z
-    print Z.mean(axis=0)
 
 
 

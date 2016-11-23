@@ -16,6 +16,7 @@ import amazon_exp
 
 def getFeatureMapping_sklearn(vectorizer):
     """
+    Get the Id to Word and Word to Id dictionary from a vectorize
     :param vectorizer:
     :return:
     """
@@ -35,13 +36,9 @@ def getFeatureMapping_sklearn(vectorizer):
 
 def parse_processed_amazon_dataset(FNames,max_words=10000):
     """
-    #Include fnames | same dico . How do you do that ?
-    :param fnames: List of filenames processed
+    :param fnames: List of filenames to be processed processed
     :return: a dictionary of token to id and a Matrix
     List of (X,Y),(X,Y)
-    Same dico for the same domains.
-    Do I want to keep the positive,negative splits
-    [1000,1000] in the
     """
 
 
@@ -68,8 +65,6 @@ def parse_processed_amazon_dataset(FNames,max_words=10000):
 
     ### Preprocessing_options
     dico.filter_extremes(no_below=2, keep_n=max_words)
-    #dico.filter_extremes(no_below=4, no_above=0.9, keep_n=max_words)
-    #dico.filter_extremes(no_below=0, no_above=0.9, keep_n=10000)
     dico.compactify()
 
     for fname in FNames:
@@ -177,8 +172,8 @@ def get_comp_vs_sci(fit_all=True):
     target_categories= ['comp.sys.ibm.pc.hardware', 'comp.sys.mac.hardware', 'sci.med', 'comp.windows.x','sci.space']
 
 
-    source_data = fetch_20newsgroups(data_home='../dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=source_categories)
-    target_data = fetch_20newsgroups(data_home='../dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=target_categories)
+    source_data = fetch_20newsgroups(data_home='./dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=source_categories)
+    target_data = fetch_20newsgroups(data_home='./dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=target_categories)
 
 
     vectorizer = CountVectorizer(min_df=3, stop_words="english",max_features=10000)
@@ -261,8 +256,8 @@ def get_20NG_DomainAdaptation(source_categories_list,target_categories_list,fit_
     source_categories = source_categories_list[0] +source_categories_list[1]
     target_categories = target_categories_list[0] +target_categories_list[1]
 
-    source_data = fetch_20newsgroups(data_home='../dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=source_categories)
-    target_data = fetch_20newsgroups(data_home='../dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=target_categories)
+    source_data = fetch_20newsgroups(data_home='./dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=source_categories)
+    target_data = fetch_20newsgroups(data_home='./dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=target_categories)
 
 
     vectorizer = CountVectorizer(min_df=3, stop_words="english",max_features=10000)
