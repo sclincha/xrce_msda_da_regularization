@@ -1,0 +1,3 @@
+cat positive.review negative.review unlabeled.review  > all.review
+cat positive.review negative.review >labelled.review
+
