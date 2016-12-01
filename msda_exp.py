@@ -127,7 +127,6 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
         self.target_reg=target_reg
         self.source_reg=source_reg
 
-        print "Warning Ignoring Classifier"
         self.init_domain_variable()
         self.cross_valid=True
         self.default_clf=LogisticRegression()
@@ -148,9 +147,6 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
         self.D_matrix=np.zeros((X_all.shape[0],2))
         self.D_matrix[:self.Xs.shape[0],0]=1
         self.D_matrix[self.Xs.shape[0]:,1]=1
-        #if self.orthogonal_reg:
-            #self.D_vector[:]=0.0
-            #self.D_matrix[:,:]=0.0
 
 
 
@@ -161,25 +157,6 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
         #C=C.reshape((C.shape[0],1))
         self.C=C.reshape((C.shape[0],1))
 
-
-    def fit_domain_classifier_cv(self,X_all):
-        ridge_clf = RidgeClassifierCV(alphas=self.alphas)
-        if self.domain_classifier_feat=='bow':
-            ridge_clf.fit(X_all, self.D_vector) #Before it was X_all
-        elif self.domain_classifier_feat=='msda':
-            h0,_=denoising_autoencoders.mDA_without_bias(X_all.T,0.9,layer_func=self.layer_func,Xr=None)
-            ridge_clf.fit(h0.T, self.D_vector) #Before it was X_all
-        else:
-            raise Exception('Invalid Feature type for Domain Classifier')
-        #ridge_clf.fit(X_a ll, self.D_vector) #Before it was X_all
-        self.C=ridge_clf.coef_.T
-
-        print "Best alpha:", ridge_clf.alpha_
-        #TODO Add Options for Sample Weight for element in target and source
-        #TODO Works only for Binary Class now
-        z=ridge_regression(Xlabelled_all,Ylabelled_all,alpha)
-        #z=ridge_regression(self.Xs,self.Ys,alpha)
-        self.ridge_class_coeff=z.reshape((z.shape[0],1))
 
 
 
@@ -212,7 +189,7 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
         Icc= np.linalg.inv(np.eye(X_all.shape[1])-eta*Z)
 
         print("Computing msda with Domain Regularizer")
-        hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,eta,self.C,Dvector,Icc)
+        hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,eta,self.C,Dvector,Icc,reg_lambda=0.0)
         #Check it is the same link function ....
         Xs_mda = hx.T[:ns,:]
         print("CrossValidating Source Classifier")
@@ -267,12 +244,12 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
                         Dvector[:]=1.0
 
                     Icc= np.linalg.inv(np.eye(X_all.shape[1])-eta*Z)
-                    print "Computing msda with Domain Regularizer"
-                    hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,eta,self.C,Dvector,Icc)
+                    print("Computing msda with Domain Regularizer")
+                    hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,eta,self.C,Dvector,Icc,reg_lambda=0.0)
                     #Check it is the same link function ....
                     Xs_mda = hx.T[:ns,:]
 
-                    print "CV Source Classifier"
+                    print("CV Source Classifier")
                     if self.cross_valid:
                         self.clf = domain_adaptation_baseline.cross_validate_classifier(Xs_mda, self.Ys, LogisticRegression, score='accuracy', ncv=3, n_jobs=3,verbose=0)
                     else:
@@ -304,7 +281,7 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
         Z=np.dot(self.C,self.C.T)
         Icc= np.linalg.inv(np.eye(X_all.shape[1])-best_eta*Z)
         print "Computing msda with Domain Regularizer"
-        hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,best_eta,self.C,Dvector,Icc)
+        hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,best_eta,self.C,Dvector,Icc,reg_lambda=0.0)
         Xs_mda = hx.T[:ns,:]
         self.W=W
 
@@ -312,125 +289,6 @@ class MsdaDomReg(domain_adaptation_baseline.DomAdapEstimator):
             self.clf = domain_adaptation_baseline.cross_validate_classifier(Xs_mda, self.Ys, LogisticRegression, score='accuracy', ncv=3, n_jobs=3,verbose=0)
         else:
             self.clf = self.default_clf.fit(Xs_mda,self.Ys)
-
-
-
-
-    def reverse_cross_val(self,validation_size=0.1):
-
-        ndocs=self.Xs.shape[0]
-        #Split Source Validation ...
-
-        rs = sklearn.cross_validation.ShuffleSplit(ndocs, n_iter=1,test_size=validation_size)
-        for train_idx,val_idx in rs:
-            TRAIN_IDX=train_idx
-            VAL_IDX=val_idx
-
-        Xs_train =self.Xs[TRAIN_IDX,:]
-        Ys_train =self.Ys[TRAIN_IDX]
-
-        Xs_val   =self.Xs[VAL_IDX,:]
-        Ys_val   =self.Ys[VAL_IDX]
-
-        D_vector_source = self.D_vector[:ndocs]
-        D_vector_target = self.D_vector[ndocs:]
-        D_vector = np.hstack([D_vector_source[TRAIN_IDX],D_vector_target])
-
-        if sp.issparse(self.Xs):
-            X_all   = sp.vstack([Xs_train,self.Xt])
-        else:
-             X_all    = np.vstack([Xs_train,self.Xt])
-
-
-        ns =Xs_train.shape[0]
-        ACC=[]
-        for alpha in self.alphas:
-            #Fit Domain Classifier
-            ridge_clf = RidgeClassifier(alpha=alpha)
-            ridge_clf.fit(X_all, D_vector) #Before it was X_all
-            self.C=ridge_clf.coef_.T
-            #self.fit_domain_classifier(alpha,X_all)
-            Z=np.dot(self.C,self.C.T)
-            for eta in self.etas:
-
-
-                DvectorReg = np.array(D_vector)
-                if self.orthogonal_reg:
-                    eta =-eta
-                    #Changing Dvector only in msda else C become 0
-                    DvectorReg[:]=0.0
-
-                if self.target_reg:
-                    eta =-eta
-                    #Changing Dvector only in msda else C become 0
-                    DvectorReg[:]=1.0
-
-                Icc= np.linalg.inv(np.eye(X_all.shape[1])-eta*Z)
-                print "Computing msda with Domain Regularizer"
-                hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,eta,self.C,DvectorReg,Icc)
-                #Check it is the same link function ....
-                Xs_mda = hx.T[:ns,:]
-                Xt_mda = hx.T[ns:,:]
-                print "CV Source Classifier"
-                self.clf = domain_adaptation_baseline.cross_validate_classifier(Xs_mda, Ys_train, LogisticRegression, score='accuracy', ncv=3, n_jobs=3)
-                #print self.clf.grid_scores_
-                #max_score= clf.best_score_
-                #clf.fit(Xs_mda,Ys)
-                #Only the classifier needs to be relearned ... as the feature representation does not change ....
-                #Do the reverse validation ... Here
-
-                #I don't reuse Xs for learning ...
-                Ypred = self.clf.predict(Xt_mda)
-                Y_all = np.hstack([Ys_train,Ypred])
-                #Retrain on Prediction and Target Features ...
-                #It is not the proper reverse validation mechanism as here I cross validated ....
-                #I should again cross val on the C here
-                #self.clf =exp_run.cross_validate_classifier(Xt_mda,Ypred,LogisticRegression,score='accuracy',ncv=3,n_jobs=3)
-                self.clf = domain_adaptation_baseline.cross_validate_classifier(hx.T, Y_all, LogisticRegression, score='accuracy', ncv=3, n_jobs=3)
-
-                Xsval_msda = denoising_autoencoders.transform_test(Xs_val.T,W,layer_func=self.layer_func,use_bias=False).T
-                validation_score = self.clf.score(Xsval_msda,Ys_val)
-                #source_score= sklearn.cross_validation.cross_val_score(self.clf,Xs_mda,y=self.Ys,cv=3).mean()
-                ACC.append((validation_score,(alpha,eta)))
-
-        #Then find max
-        sorted_ACC=sorted(ACC)
-        self.source_cv_accuracy=sorted_ACC
-        print sorted_ACC
-        best_alpha=sorted_ACC[-1][1][0]
-        best_eta=sorted_ACC[-1][1][1]
-        #Print Refit the model
-        #self.fit_domain_classifier(best_alpha,X_all)
-
-
-
-        ridge_clf = RidgeClassifier(alpha=best_alpha)
-        ridge_clf.fit(X_all, D_vector) #Before it was X_all
-        self.C=ridge_clf.coef_.T
-
-        DvectorReg = np.array(D_vector)
-        if self.orthogonal_reg:
-            eta =-eta
-            #Changing Dvector only in msda else C become 0
-            DvectorReg[:]=0.0
-
-        if self.target_reg:
-            eta =-eta
-            #Changing Dvector only in msda else C become 0
-            DvectorReg[:]=1.0
-
-        Z=np.dot(self.C,self.C.T)
-        Icc= np.linalg.inv(np.eye(X_all.shape[1])-best_eta*Z)
-        print "Computing msda with Domain Regularizer"
-        hx,W=denoising_autoencoders.mDA_domain_regularization(X_all.T,self.noise,best_eta,self.C,DvectorReg,Icc)
-        Xs_mda = hx.T[:ns,:]
-        self.W=W
-        #Maybe Retrain on all Here ....
-        #Here I remove some part of the training sets ...
-        #Change here with feature labelling ...
-        #It is cheating , is it doing msda with self-labelling ....
-        self.clf = domain_adaptation_baseline.cross_validate_classifier(Xs_mda, Ys_train, LogisticRegression, score='accuracy', ncv=3, n_jobs=3)
-
 
 
 

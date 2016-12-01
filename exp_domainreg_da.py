@@ -85,6 +85,7 @@ if __name__ == '__main__':
     ETAS=[0.01,0.1,1,10]
     #ETAS=[0.1]
     max_word=5000
+    #max_word=10000
     domain_feat='bow'
 
     if EXPSET=='AMT':
