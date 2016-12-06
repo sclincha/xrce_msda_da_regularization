@@ -46,13 +46,13 @@ def print_results_latex(res_path,DID=range(12,24),did_pickle='amt_datasets_id.pi
                 del tok[1]
                 #print tok
                 TT=tok
-                print string.join(TT,'&'),'& %1.2f'% msda_acc,'&','%1.2f'%dr_acc,'\\\\'
+                print(string.join(TT,'&'),'& %1.2f'% msda_acc,'&','%1.2f'%dr_acc,'\\\\')
             else:
-                print string.join(DATANAME[i][:2],'&'),'& %1.2f'% msda_acc,'&','%1.2f'%dr_acc,'\\\\'
+                print(string.join(DATANAME[i][:2],'&'),'& %1.2f'% msda_acc,'&','%1.2f'%dr_acc,'\\\\')
         except Exception as e:
             print(e)
-    print Z
-    print Z.mean(axis=0)
+    print(Z)
+    print( Z.mean(axis=0) )
 
 
 
@@ -85,18 +85,14 @@ if __name__ == '__main__':
     ETAS=[0.01,0.1,1,10]
     #ETAS=[0.1]
     max_word=5000
-    #max_word=10000
     domain_feat='bow'
 
     if EXPSET=='AMT':
         DATASETSID=pickle.load(open('amt_datasets_id.pickle'))
-        #Xs,Ys,Xt,Yt,dico = dataset_utils.get_da_datasets(DATASETSID[datasetid][0],DATASETSID[datasetid][1],DATASETSID[datasetid][2])
-        #TODO Do exp with 5000 Features
         Xs,Ys,Xt,Xtest,Ytest,dico = amazon_exp.get_da_dataset_test(DATASETSID[datasetid][0],DATASETSID[datasetid][1],DATASETSID[datasetid][2],max_words=max_word,feat_type=2)
 
     elif EXPSET=="20NG":
         Xs,Ys,Xt,Yt,dico_countVect = dataset_utils.get_da_twenty_datasets(datasetid)
-
         #TODO
         tfidf_trans = TfidfTransformer()
         tfidf_trans.fit(sp.vstack([Xs,Xt]))
@@ -128,8 +124,8 @@ if __name__ == '__main__':
 
     x.fit()
     acc_domreg = x.score(Xtest,Ytest)
-    print "Cross Val Source"
-    print x.source_cv_accuracy
+    print("Cross Val Source")
+    print(x.source_cv_accuracy)
 
 
     scores =np.array([acc_msda,acc_domreg])
