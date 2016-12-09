@@ -1,4 +1,4 @@
-# Regularized marginalized Stacked Denoising Autoencders for Domain Adaptation
+# Regularized marginalized Stacked Denoising Autoencoders for Domain Adaptation
  *  Matlab Code for  Csurka, Gabriela and Chidlovskii, Boris and Clinchant, Stéphane and  Michel, Sofia, Unsupervised Domain Adaptation with Regularized Domain Instance Denoising,
  ECCV workshop on Transferring and Adapting Source Knowledge in Computer Vision (TASK-CV), 2016 [Paper Here](http://adas.cvc.uab.es/task-cv2016/papers/0009.pdf)
 
@@ -18,7 +18,13 @@ the distance between the source and the target data. We also exploit the source
 class labels as another way to regularize the loss, by using a domain classifier
 regularizer. Our model remains unsupervised and can be computed in a closed form. 
 
-#Dependencies
+#Licence
+Cf the LICENCE File; Copyright 2016 Xerox Corporation (“Xerox”)
+
+
+
+
+#Python Dependencies
   * sklearn
   * numpy
   * scipy
