@@ -1,6 +1,7 @@
 # Regularized marginalized Stacked Denoising Autoencoders for Domain Adaptation
- *  Matlab Code for  Csurka, Gabriela and Chidlovskii, Boris and Clinchant, Stéphane and  Michel, Sofia, Unsupervised Domain Adaptation with Regularized Domain Instance Denoising,
- ECCV workshop on Transferring and Adapting Source Knowledge in Computer Vision (TASK-CV), 2016 [Paper Here](http://adas.cvc.uab.es/task-cv2016/papers/0009.pdf)
+ *  Matlab Code for  "Unsupervised Domain Adaptation with Regularized Domain Instance Denoising",
+    Csurka, Gabriela and Chidlovskii, Boris and Clinchant, Stéphane and  Michel, Sofia in 
+  ECCV workshop on Transferring and Adapting Source Knowledge in Computer Vision (TASK-CV), 2016 [Paper Here](http://adas.cvc.uab.es/task-cv2016/papers/0009.pdf)
 
  *  Python Code for ACL'16: Link to Paper: [A Domain Adaptation Regularization for Denoising Autoencoders"](https://www.aclweb.org/anthology/P/P16/P16-2005.pdf)
 Contains also implemenation of marginalized stacked denoising autoencoders [Chen et al, ICML'12](http://www.cs.cornell.edu/~kilian/papers/msdadomain.pdf).
