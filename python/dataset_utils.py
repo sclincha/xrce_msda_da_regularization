@@ -560,8 +560,8 @@ def get_20NG_DomainAdaptation_TestFeatures(source_categories_list,target_categor
     source_categories = source_categories_list[0] +source_categories_list[1]
     target_categories = target_categories_list[0] +target_categories_list[1]
 
-    source_data = fetch_20newsgroups(data_home='../dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=source_categories)
-    target_data = fetch_20newsgroups(data_home='../dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=target_categories)
+    source_data = fetch_20newsgroups(data_home='./dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=source_categories)
+    target_data = fetch_20newsgroups(data_home='./dataset/sklearn_data', subset='all',remove=('headers', 'footers', 'quotes'),categories=target_categories)
 
 
     vectorizer = CountVectorizer(min_df=3, stop_words="english",max_features=10000)

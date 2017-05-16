@@ -57,7 +57,6 @@ def mDA_without_bias(X,p,reg_lambda=1e-2,layer_func=np.tanh,Xr=None):
     :return:
     """
     #Extend observations to add bias features
-
     (n_features,n_obs)=X.shape
     #print("X_matrix has shape",n_features,n_obs)
 
@@ -114,7 +113,7 @@ def mDA_domain_regularization(X,p,eta,C,D,IC_inverse,reg_lambda=1e-2,layer_func=
     """
 
     :param X:
-    :param p:
+    :param p: the Drop Out Noise
     :param reg_lambda:
     :param layer_func:
     :param Xr:

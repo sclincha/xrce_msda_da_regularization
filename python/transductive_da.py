@@ -5,33 +5,20 @@ import numpy as np
 import string
 import sys
 sys.path.append('..')
-import scipy.sparse as sp
-from scipy.io import loadmat
 import dataset_utils
-import exp_run
 import sklearn
 import domain_adaptation_baseline
 from sklearn.feature_extraction.text import TfidfTransformer
 
-#Do that with multiprocessing to speed up the thing
-
-import multiprocessing
 from multiprocessing import Pool
 import string
 import pickle
 import denoising_autoencoders
-import itertools
-import pdb
 from termweight import term_weighting
-import commands #for listing all image datasets
 import amazon_exp
 
-from sklearn.grid_search import GridSearchCV,RandomizedSearchCV
 import sklearn.svm
-from sklearn.svm import LinearSVC,SVC
-import scipy
 
-import signal
 def res_to_latex(Res):
     """
     Export Res of Tuple to latex table
@@ -305,8 +292,8 @@ def msda_source_clf_job(paramid):
     DATASETSID=pickle.load(open('amt_datasets_id.pickle'))
 
 
-    Xs,Ys,Xt,Yt,dico = amazon_exp.get_da_dataset_transductive(DATASETSID[datasetid][0],DATASETSID[datasetid][1],DATASETSID[datasetid][2],max_words=10000)
-
+    Xs,Ys,Xt,Yt,dico = amazon_exp.get_dataset(DATASETSID[datasetid][0],DATASETSID[datasetid][1],DATASETSID[datasetid][2],max_words=10000)
+    #Xs,Ys,Xt,Yt,dico = amazon_exp.get_da_dataset_transductive(DATASETSID[datasetid][0],DATASETSID[datasetid][1],DATASETSID[datasetid][2],max_words=10000)
     #Xs,Ys,Xt_adapt,Xt,Yt,dico = amazon_exp.get_da_dataset_test(DATASETSID[datasetid][0],DATASETSID[datasetid][1],DATASETSID[datasetid][2])
     #get_da_dataset_test
 
@@ -316,7 +303,7 @@ def msda_source_clf_job(paramid):
 
     #score='AUC'
     score='ACC'
-    (baseline_score,model_score)= msda_classifier(Xs,Ys,Xt,Yt,noise=noise,feat_type=0,score=score,self_learning=False)
+    (baseline_score,model_score)= msda_classifier(Xs,Ys,Xt,Yt,noise=noise,feat_type=2,score=score,self_learning=False)
     return (datasetid,noise,feat_type,baseline_score,model_score)
 
 
@@ -398,7 +385,7 @@ def msda_source_clf_job_AMT_testfeatures(paramid):
     noise     = float(parameters[1])
     feat_type = int(parameters[2])
 
-    DATASETSID=pickle.load(open('/home/sclincha/AAT/src/DenoisingAutoencoders/datasets_id.pickle'))
+    DATASETSID=pickle.load(open('./amt_datasets_id.pickle'))
 
     sname,tname=DATASETSID[datasetid][0],DATASETSID[datasetid][1]
     Xs,Ys,Xt,Yt,Xt_f,vectorizer,target_vectorizer=amazon_exp.get_da_dataset_transductive_with_target_feature(sname,tname,DATASETSID[datasetid][2],max_words=10000,feat_type=2)
@@ -418,7 +405,9 @@ def msda_source_clf_job_AMT_testfeatures(paramid):
     score='ACC'
     (baseline_score,model_score)=msda_classifier_with_testfeat(Xs,Ys,Xt,Yt,Xt_f,noise=0.9,feat_type=0,target_feat_type=2,score=score,layer_func=np.tanh,self_learning=False)
 
-    #(baseline_score,model_score)= msda_classifier(Xs,Ys,Xt,Yt,noise=noise,feat_type=0,score=score,self_learning=False)
+    #(baseline_scor_access,model_score_access)= msda_classifier(Xs,Ys,Xt,Yt,noise=noise,feat_type=0,score=score,self_learning=False)
+
+    #print(baseline_scor_access,model_score_access)
     return (datasetid,noise,feat_type,baseline_score,model_score)
 
 
@@ -467,26 +456,25 @@ if __name__=="__main__":
     outname="msda_clf_20NG_proba_ACC_AMT_testfeat"
 
     noise=str(0.9)
-    feat =str(2)
-    #param_list =[str(i)+':'+noise+':'+feat for i in xrange(28)]
-    #param_list =[str(i)+':'+noise+':'+feat for i in xrange(24)]
+    feat =str(2) #Indicate TF-IDF features
+    #Generate paramters id for the small Amazon tasks
+    #amt_param_list =[str(i)+':'+noise+':'+feat for i in xrange(12,24)]
+    amt_param_list =[str(i)+':'+noise+':'+feat for i in [12]]
 
-    #param_list =[str(i)+':'+noise+':'+feat for i in xrange(10)]
-    amt_param_list =[str(i)+':'+noise+':'+feat for i in xrange(12,24)]
+    #Param List 20newsgroup
+    ng_param_list =[str(i)+':'+noise+':'+feat for i in xrange(10)]
+
+    #Debug Parameters
     #debug_list =[str(i)+':'+noise+':'+feat for i in xrange(2)]
-
-
-    #res=msda_source_clf_job(paramid)
-    #print res
 
     pool = Pool(12)
 
 
     try:
-        #res= pool.map(msda_source_clf_job, amt_param_list)
+        res= pool.map(msda_source_clf_job, amt_param_list)
         #res= pool.map(msda_source_clf_job_20NG, param_list)
-        #res= pool.map(msda_source_clf_job_20NG_testfeatures, param_list)
-        res= pool.map(msda_source_clf_job_AMT_testfeatures, amt_param_list)
+        #res= pool.map(msda_source_clf_job_20NG_testfeatures, ng_param_list)
+        #res= pool.map(msda_source_clf_job_AMT_testfeatures, amt_param_list)
         pool.close()
         pool.join()
 
